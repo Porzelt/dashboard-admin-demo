@@ -1,10 +1,14 @@
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
-export const CORES = ['#2563eb', '#16a34a', '#f59e0b', '#dc2626', '#7c3aed', '#0891b2']
+// Uma cor neutra para séries sem significado; cores semânticas só quando a categoria tem significado
+// (as mesmas dos badges: azul = aberta, âmbar = em andamento/média, verde = concluída, vermelho = alta).
+export const COR_SERIE = '#3b82f6'
+export const COR = { azul: '#3b82f6', ambar: '#f59e0b', verde: '#22c55e', vermelho: '#ef4444', cinza: '#94a3b8' }
 
 export interface Ponto {
   nome: string
   valor: number
+  cor?: string
 }
 
 const eixo = { stroke: 'var(--muted)', fontSize: 12 }
@@ -15,11 +19,11 @@ export function GraficoLinha({ dados, formato }: { dados: Ponto[]; formato?: (v:
     <div className="grafico" role="img" aria-label="Gráfico de linha">
       <ResponsiveContainer width="100%" height={240} initialDimension={{ width: 500, height: 240 }}>
         <LineChart data={dados} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--borda)" />
+          <CartesianGrid vertical={false} stroke="var(--borda)" />
           <XAxis dataKey="nome" {...eixo} />
           <YAxis {...eixo} tickFormatter={formato} width={56} />
           <Tooltip {...dica} formatter={(v) => (formato ? formato(Number(v)) : String(v))} />
-          <Line isAnimationActive={false} type="monotone" dataKey="valor" stroke={CORES[0]} strokeWidth={2.5} dot={{ r: 3 }} />
+          <Line isAnimationActive={false} type="monotone" dataKey="valor" stroke={COR_SERIE} strokeWidth={2.5} dot={{ r: 3 }} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -31,13 +35,13 @@ export function GraficoBarra({ dados }: { dados: Ponto[] }) {
     <div className="grafico" role="img" aria-label="Gráfico de barras">
       <ResponsiveContainer width="100%" height={240} initialDimension={{ width: 500, height: 240 }}>
         <BarChart data={dados} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--borda)" />
+          <CartesianGrid vertical={false} stroke="var(--borda)" />
           <XAxis dataKey="nome" {...eixo} />
           <YAxis {...eixo} allowDecimals={false} />
           <Tooltip {...dica} cursor={{ fill: 'var(--hover)' }} />
-          <Bar isAnimationActive={false} dataKey="valor" radius={[6, 6, 0, 0]}>
-            {dados.map((_, i) => (
-              <Cell key={i} fill={CORES[i % CORES.length]} />
+          <Bar isAnimationActive={false} dataKey="valor" radius={[4, 4, 0, 0]} maxBarSize={36}>
+            {dados.map((d, i) => (
+              <Cell key={i} fill={d.cor ?? COR_SERIE} />
             ))}
           </Bar>
         </BarChart>
@@ -52,17 +56,17 @@ export function GraficoPizza({ dados }: { dados: Ponto[] }) {
       <ResponsiveContainer width="100%" height={240} initialDimension={{ width: 500, height: 240 }}>
         <PieChart>
           <Pie isAnimationActive={false} data={dados} dataKey="valor" nameKey="nome" innerRadius={50} outerRadius={85} paddingAngle={2} stroke="none">
-            {dados.map((_, i) => (
-              <Cell key={i} fill={CORES[i % CORES.length]} />
+            {dados.map((d, i) => (
+              <Cell key={i} fill={d.cor ?? COR_SERIE} />
             ))}
           </Pie>
           <Tooltip {...dica} />
         </PieChart>
       </ResponsiveContainer>
       <ul className="legenda">
-        {dados.map((d, i) => (
+        {dados.map((d) => (
           <li key={d.nome}>
-            <i style={{ background: CORES[i % CORES.length] }} /> {d.nome}: <strong>{d.valor}</strong>
+            <i style={{ background: d.cor ?? COR_SERIE }} /> {d.nome}: <strong>{d.valor}</strong>
           </li>
         ))}
       </ul>

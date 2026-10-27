@@ -1,11 +1,13 @@
 import { useMemo } from 'react'
 import { Card, Kpi, PageHeader, Vazio } from '../components/ui'
-import { GraficoBarra, GraficoLinha, GraficoPizza } from '../components/Chart'
+import { COR, GraficoBarra, GraficoLinha, GraficoPizza } from '../components/Chart'
 import { contarPor } from '../domain/consultas'
 import { indicadores, porMes, rotuloMes } from '../domain/indicadores'
 import { moeda, tempoRelativo } from '../domain/formatar'
 import { ROTULO_STATUS_SOLICITACAO } from '../domain/types'
 import { useDados } from '../state'
+
+const COR_STATUS = { aberta: COR.azul, em_andamento: COR.ambar, concluida: COR.verde }
 
 export function Dashboard() {
   const { clientes, solicitacoes, atividades } = useDados()
@@ -14,7 +16,7 @@ export function Dashboard() {
   const novos = useMemo(() => porMes(clientes, (c) => c.criadoEm).map((p) => ({ nome: rotuloMes(p.mes), valor: p.total })), [clientes])
   const status = useMemo(() => {
     const c = contarPor(solicitacoes, (s) => s.status)
-    return (Object.keys(ROTULO_STATUS_SOLICITACAO) as (keyof typeof ROTULO_STATUS_SOLICITACAO)[]).map((s) => ({ nome: ROTULO_STATUS_SOLICITACAO[s], valor: c[s] ?? 0 }))
+    return (Object.keys(ROTULO_STATUS_SOLICITACAO) as (keyof typeof ROTULO_STATUS_SOLICITACAO)[]).map((s) => ({ nome: ROTULO_STATUS_SOLICITACAO[s], valor: c[s] ?? 0, cor: COR_STATUS[s] }))
   }, [solicitacoes])
 
   return (

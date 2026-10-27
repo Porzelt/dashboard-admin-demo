@@ -3,12 +3,14 @@ import { Card, Kpi, PageHeader } from '../components/ui'
 import { CampoData, FilterBar, Selecao } from '../components/FilterBar'
 import { Table, type Coluna } from '../components/Table'
 import { StatusSolBadge } from '../components/badges'
-import { GraficoBarra } from '../components/Chart'
+import { COR, GraficoBarra } from '../components/Chart'
 import { baixarCsv, gerarCsv, type ColunaCsv } from '../domain/csv'
 import { filtrarSolicitacoes } from '../domain/consultas'
 import { dataBr } from '../domain/formatar'
 import { ROTULO_PRIORIDADE, ROTULO_STATUS_SOLICITACAO, type Solicitacao, type StatusSolicitacao } from '../domain/types'
 import { useDados } from '../state'
+
+const COR_PRIORIDADE = { alta: COR.vermelho, media: COR.ambar, baixa: COR.cinza }
 
 export function colunasCsv(nomeCliente: (id: string) => string): ColunaCsv<Solicitacao>[] {
   return [
@@ -28,7 +30,7 @@ export function Relatorios() {
   const [ate, setAte] = useState('')
   const nomeCliente = (id: string) => clientes.find((c) => c.id === id)?.nome ?? '—'
   const lista = useMemo(() => filtrarSolicitacoes(solicitacoes, { status, de, ate }), [solicitacoes, status, de, ate])
-  const porPrioridade = (['alta', 'media', 'baixa'] as const).map((p) => ({ nome: ROTULO_PRIORIDADE[p], valor: lista.filter((s) => s.prioridade === p).length }))
+  const porPrioridade = (['alta', 'media', 'baixa'] as const).map((p) => ({ nome: ROTULO_PRIORIDADE[p], valor: lista.filter((s) => s.prioridade === p).length, cor: COR_PRIORIDADE[p] }))
 
   const colunas: Coluna<Solicitacao>[] = [
     { chave: 'id', titulo: 'Código', render: (s) => s.id },
