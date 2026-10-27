@@ -97,6 +97,7 @@ main { padding: 24px; max-width: 1280px; margin: 0 auto; display: flex; flex-dir
   .tabela, .tabela tbody, .tabela tr, .tabela td { display: block; width: 100%; }
   .tabela tr { border: 1px solid var(--borda); border-radius: 10px; margin-bottom: 10px; padding: 6px 4px; }
   .tabela td { border: 0; display: flex; justify-content: space-between; gap: 12px; padding: 5px 10px; text-align: right; }
+  .tabela td .cel { min-width: 0; overflow-wrap: anywhere; }
   .tabela td::before { content: attr(data-label); color: var(--muted); font-size: .78rem; text-align: left; }
 }
 @media print {

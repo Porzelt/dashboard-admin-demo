@@ -48,7 +48,7 @@ export function Table<T>({ colunas, linhas, chaveLinha, ordem, direcao, onOrdena
             <tr key={chaveLinha(l)} className={onLinha ? 'clicavel' : undefined} onClick={onLinha ? () => onLinha(l) : undefined}>
               {colunas.map((c) => (
                 <td key={c.chave} data-label={c.titulo}>
-                  {c.render(l)}
+                  <div className="cel">{c.render(l)}</div>
                 </td>
               ))}
             </tr>

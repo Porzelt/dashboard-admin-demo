@@ -19,7 +19,7 @@ export function GraficoLinha({ dados, formato }: { dados: Ponto[]; formato?: (v:
           <XAxis dataKey="nome" {...eixo} />
           <YAxis {...eixo} tickFormatter={formato} width={56} />
           <Tooltip {...dica} formatter={(v) => (formato ? formato(Number(v)) : String(v))} />
-          <Line type="monotone" dataKey="valor" stroke={CORES[0]} strokeWidth={2.5} dot={{ r: 3 }} />
+          <Line isAnimationActive={false} type="monotone" dataKey="valor" stroke={CORES[0]} strokeWidth={2.5} dot={{ r: 3 }} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -35,7 +35,7 @@ export function GraficoBarra({ dados }: { dados: Ponto[] }) {
           <XAxis dataKey="nome" {...eixo} />
           <YAxis {...eixo} allowDecimals={false} />
           <Tooltip {...dica} cursor={{ fill: 'var(--hover)' }} />
-          <Bar dataKey="valor" radius={[6, 6, 0, 0]}>
+          <Bar isAnimationActive={false} dataKey="valor" radius={[6, 6, 0, 0]}>
             {dados.map((_, i) => (
               <Cell key={i} fill={CORES[i % CORES.length]} />
             ))}
@@ -51,7 +51,7 @@ export function GraficoPizza({ dados }: { dados: Ponto[] }) {
     <div className="grafico" role="img" aria-label="Gráfico de pizza">
       <ResponsiveContainer width="100%" height={240} initialDimension={{ width: 500, height: 240 }}>
         <PieChart>
-          <Pie data={dados} dataKey="valor" nameKey="nome" innerRadius={50} outerRadius={85} paddingAngle={2} stroke="none">
+          <Pie isAnimationActive={false} data={dados} dataKey="valor" nameKey="nome" innerRadius={50} outerRadius={85} paddingAngle={2} stroke="none">
             {dados.map((_, i) => (
               <Cell key={i} fill={CORES[i % CORES.length]} />
             ))}
