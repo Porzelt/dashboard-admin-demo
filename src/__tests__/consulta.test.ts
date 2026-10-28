@@ -1,5 +1,5 @@
 import { buscar, dentroDoPeriodo, normalizar, ordenar, paginar } from '../domain/consulta'
-import { consultarClientes, filtrarSolicitacoes, type FiltroClientes } from '../domain/consultas'
+import { consultarClientes, filtrarSolicitacoes, ordenarSolicitacoes, type FiltroClientes } from '../domain/consultas'
 import { gerarClientes, gerarSolicitacoes } from '../data/seed'
 import { indicadores, porMes } from '../domain/indicadores'
 
@@ -64,6 +64,35 @@ describe('solicitações e período', () => {
     expect(dentroDoPeriodo('2026-03-09', '2026-03-10')).toBe(false)
     const r = filtrarSolicitacoes(solicitacoes, { status: 'concluida', de: '2026-04-01', ate: '2026-06-30' })
     expect(r.every((s) => s.status === 'concluida' && s.criadaEm >= '2026-04-01' && s.criadaEm <= '2026-06-30')).toBe(true)
+  })
+})
+
+describe('ordenarSolicitacoes', () => {
+  const nome = (id: string) => clientes.find((c) => c.id === id)?.nome ?? ''
+
+  it('status segue o fluxo (aberta → em andamento → concluída), não o alfabeto', () => {
+    const r = ordenarSolicitacoes(solicitacoes, 'status', 'asc', nome).map((s) => s.status)
+    expect(r.indexOf('em_andamento')).toBeGreaterThan(r.lastIndexOf('aberta'))
+    expect(r.indexOf('concluida')).toBeGreaterThan(r.lastIndexOf('em_andamento'))
+  })
+
+  it('prioridade decrescente começa pelas altas', () => {
+    const r = ordenarSolicitacoes(solicitacoes, 'prioridade', 'desc', nome)
+    expect(r[0].prioridade).toBe('alta')
+    expect(r[r.length - 1].prioridade).toBe('baixa')
+  })
+
+  it('ordena pelo nome do cliente e por data', () => {
+    const porCliente = ordenarSolicitacoes(solicitacoes, 'cliente', 'asc', nome).map((s) => nome(s.clienteId))
+    expect(porCliente).toEqual([...porCliente].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })))
+    const datas = ordenarSolicitacoes(solicitacoes, 'criadaEm', 'desc', nome).map((s) => s.criadaEm)
+    expect(datas).toEqual([...datas].sort().reverse())
+  })
+
+  it('código em ordem natural (s2 antes de s10)', () => {
+    const r = ordenarSolicitacoes(solicitacoes, 'id', 'asc', nome).map((s) => s.id)
+    expect(r.slice(0, 3)).toEqual(['s1', 's2', 's3'])
+    expect(r.indexOf('s2')).toBeLessThan(r.indexOf('s10'))
   })
 })
 

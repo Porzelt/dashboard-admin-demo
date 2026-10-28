@@ -35,6 +35,28 @@ export function filtrarSolicitacoes(lista: Solicitacao[], f: FiltroSolicitacoes)
   return r
 }
 
+export type CampoSolicitacao = 'id' | 'titulo' | 'cliente' | 'status' | 'prioridade' | 'criadaEm'
+
+// Status e prioridade seguem a ordem do fluxo/gravidade, não a ordem alfabética.
+const ORDEM_STATUS: Record<StatusSolicitacao, number> = { aberta: 0, em_andamento: 1, concluida: 2 }
+const ORDEM_PRIORIDADE = { baixa: 0, media: 1, alta: 2 } as const
+
+export function ordenarSolicitacoes(lista: Solicitacao[], campo: CampoSolicitacao, direcao: Direcao, nomeCliente: (id: string) => string): Solicitacao[] {
+  const valor = (s: Solicitacao): string | number => {
+    switch (campo) {
+      case 'cliente':
+        return nomeCliente(s.clienteId)
+      case 'status':
+        return ORDEM_STATUS[s.status]
+      case 'prioridade':
+        return ORDEM_PRIORIDADE[s.prioridade]
+      default:
+        return s[campo]
+    }
+  }
+  return ordenar(lista, valor, direcao)
+}
+
 export function contarPor<T, K extends string>(itens: T[], chave: (i: T) => K): Record<K, number> {
   const out = {} as Record<K, number>
   for (const i of itens) out[chave(i)] = (out[chave(i)] ?? 0) + 1

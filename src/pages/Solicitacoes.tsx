@@ -3,7 +3,8 @@ import { Card, PageHeader } from '../components/ui'
 import { CampoBusca, FilterBar, Selecao } from '../components/FilterBar'
 import { Table, type Coluna } from '../components/Table'
 import { PrioridadeBadge, StatusSolBadge } from '../components/badges'
-import { contarPor, filtrarSolicitacoes } from '../domain/consultas'
+import { useOrdenacao } from '../components/useOrdenacao'
+import { contarPor, filtrarSolicitacoes, ordenarSolicitacoes, type CampoSolicitacao } from '../domain/consultas'
 import { dataBr } from '../domain/formatar'
 import { ROTULO_STATUS_SOLICITACAO, type Solicitacao, type StatusSolicitacao } from '../domain/types'
 import { useDados } from '../state'
@@ -13,17 +14,21 @@ export function Solicitacoes() {
   const [status, setStatus] = useState<StatusSolicitacao | ''>('')
   const [busca, setBusca] = useState('')
   const [sel, setSel] = useState<string | null>(null)
+  const { ordem, direcao, alternar } = useOrdenacao<CampoSolicitacao>('criadaEm', 'desc')
 
   const nomeCliente = (id: string) => clientes.find((c) => c.id === id)?.nome ?? '—'
   const contagem = useMemo(() => contarPor(solicitacoes, (s) => s.status), [solicitacoes])
-  const lista = useMemo(() => filtrarSolicitacoes(solicitacoes, { status, busca }), [solicitacoes, status, busca])
+  const lista = useMemo(() => {
+    const nome = (id: string) => clientes.find((c) => c.id === id)?.nome ?? ''
+    return ordenarSolicitacoes(filtrarSolicitacoes(solicitacoes, { status, busca }), ordem, direcao, nome)
+  }, [solicitacoes, clientes, status, busca, ordem, direcao])
   const detalhe = solicitacoes.find((s) => s.id === sel)
 
   const colunas: Coluna<Solicitacao>[] = [
-    { chave: 'titulo', titulo: 'Assunto', render: (s) => <><strong>{s.titulo}</strong><div className="muted">{nomeCliente(s.clienteId)}</div></> },
-    { chave: 'status', titulo: 'Status', render: (s) => <StatusSolBadge s={s.status} /> },
-    { chave: 'prioridade', titulo: 'Prioridade', render: (s) => <PrioridadeBadge p={s.prioridade} /> },
-    { chave: 'criadaEm', titulo: 'Aberta em', render: (s) => dataBr(s.criadaEm) },
+    { chave: 'titulo', titulo: 'Assunto', ordenavel: true, render: (s) => <><strong>{s.titulo}</strong><div className="muted">{nomeCliente(s.clienteId)}</div></> },
+    { chave: 'status', titulo: 'Status', ordenavel: true, render: (s) => <StatusSolBadge s={s.status} /> },
+    { chave: 'prioridade', titulo: 'Prioridade', ordenavel: true, render: (s) => <PrioridadeBadge p={s.prioridade} /> },
+    { chave: 'criadaEm', titulo: 'Aberta em', ordenavel: true, render: (s) => dataBr(s.criadaEm) },
   ]
 
   return (
@@ -42,7 +47,7 @@ export function Solicitacoes() {
             <CampoBusca valor={busca} onChange={setBusca} placeholder="Buscar assunto ou código" />
             <Selecao rotulo="Status" valor={status} onChange={(v) => setStatus(v as StatusSolicitacao | '')} opcoes={Object.entries(ROTULO_STATUS_SOLICITACAO).map(([valor, rotulo]) => ({ valor, rotulo }))} />
           </FilterBar>
-          <Table colunas={colunas} linhas={lista} chaveLinha={(s) => s.id} onLinha={(s) => setSel(s.id)} vazio="Nenhuma solicitação com esse filtro." />
+          <Table colunas={colunas} linhas={lista} chaveLinha={(s) => s.id} ordem={ordem} direcao={direcao} onOrdenar={alternar} onLinha={(s) => setSel(s.id)} vazio="Nenhuma solicitação com esse filtro." />
         </Card>
         {detalhe && (
           <Card titulo={`Solicitação #${detalhe.id}`} acao={<button type="button" className="btn btn-ghost" onClick={() => setSel(null)} aria-label="Fechar detalhe">✕</button>} className="detalhe">

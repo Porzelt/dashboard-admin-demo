@@ -6,13 +6,13 @@ Painel administrativo genérico em **React 19 + TypeScript (Vite)**. Todos os da
 
 ![Demonstração do fluxo](docs/demo.gif)
 
-Arquitetura em camadas (domínio puro, repositório atrás de uma interface, componentes reutilizáveis, telas), estado com Context + hooks e **32 testes** (Vitest + Testing Library) cobrindo busca, filtros, ordenação, paginação, exportação Excel e CSV, validação do formulário e as telas de clientes e solicitações.
+Arquitetura em camadas (domínio puro, repositório atrás de uma interface, componentes reutilizáveis, telas), estado com Context + hooks e **37 testes** (Vitest + Testing Library) cobrindo busca, filtros, ordenação, paginação, exportação Excel e CSV, validação do formulário e as telas de clientes e solicitações.
 
 ## Funcionalidades
 
 1. **Dashboard**: indicadores (KPIs), gráficos de linha, barras e pizza (Recharts) e atividade recente.
 2. **Clientes**: tabela com busca (ignora acentos), filtros por status e cidade, ordenação por qualquer coluna e paginação.
-3. **Solicitações**: acompanhamento por status (aberta, em andamento, concluída) com abas de contagem, busca e painel de detalhe com troca de status.
+3. **Solicitações**: acompanhamento por status (aberta, em andamento, concluída) com abas de contagem, busca, ordenação por coluna (status e prioridade seguem a ordem do fluxo, não a alfabética) e painel de detalhe com troca de status.
 4. **Cadastro e edição de cliente**: formulário com validação (react-hook-form + zod), criar, editar e excluir.
 5. **Relatórios**: filtros por período e status, exportação **Excel (.xlsx)** com cabeçalho formatado, colunas ajustadas, datas reais e cabeçalho fixo; exportação **CSV** para integrações; e **impressão/PDF** com folha de estilo de impressão.
 

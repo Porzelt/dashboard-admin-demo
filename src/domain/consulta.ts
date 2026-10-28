@@ -17,7 +17,7 @@ export function ordenar<T>(itens: T[], valor: (item: T) => string | number, dire
     const va = valor(a)
     const vb = valor(b)
     if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * sinal
-    return String(va).localeCompare(String(vb), 'pt-BR', { sensitivity: 'base' }) * sinal
+    return String(va).localeCompare(String(vb), 'pt-BR', { sensitivity: 'base', numeric: true }) * sinal
   })
 }
 

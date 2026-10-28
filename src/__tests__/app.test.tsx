@@ -59,4 +59,16 @@ describe('tela Solicitações', () => {
     await userEvent.click(badges[0])
     expect(await screen.findByText(/^Solicitação #s\d+$/)).toBeInTheDocument()
   })
+
+  it('ordena por prioridade ao clicar no cabeçalho (e inverte no segundo clique)', async () => {
+    comDados(<Solicitacoes />)
+    const botao = await screen.findByRole('button', { name: /Prioridade/ })
+    const prioridades = () => within(screen.getByRole('table')).getAllByText(/^(Alta|Média|Baixa)$/, { selector: '.badge' }).map((b) => b.textContent)
+    await userEvent.click(botao)
+    expect(prioridades()[0]).toBe('Baixa')
+    expect(screen.getByRole('columnheader', { name: /Prioridade/ })).toHaveAttribute('aria-sort', 'ascending')
+    await userEvent.click(botao)
+    expect(prioridades()[0]).toBe('Alta')
+    expect(screen.getByRole('columnheader', { name: /Prioridade/ })).toHaveAttribute('aria-sort', 'descending')
+  })
 })
