@@ -12,9 +12,14 @@ export interface Ponto {
 }
 
 const eixo = { stroke: 'var(--muted)', fontSize: 12 }
-const dica = { contentStyle: { background: 'var(--card)', border: '1px solid var(--borda)', borderRadius: 8, color: 'var(--texto)' } }
+// Tooltip legível nos dois temas: texto e item na cor do tema (o padrão do Recharts é escuro fixo).
+const dica = {
+  contentStyle: { background: 'var(--tooltip-bg)', border: '1px solid var(--tooltip-borda)', borderRadius: 8, boxShadow: '0 6px 18px rgba(0,0,0,.25)' },
+  labelStyle: { color: 'var(--texto)', fontWeight: 600, marginBottom: 2 },
+  itemStyle: { color: 'var(--texto)' },
+}
 
-export function GraficoLinha({ dados, formato }: { dados: Ponto[]; formato?: (v: number) => string }) {
+export function GraficoLinha({ dados, formato, nome = 'Total' }: { dados: Ponto[]; formato?: (v: number) => string; nome?: string }) {
   return (
     <div className="grafico" role="img" aria-label="Gráfico de linha">
       <ResponsiveContainer width="100%" height={240} initialDimension={{ width: 500, height: 240 }}>
@@ -23,14 +28,14 @@ export function GraficoLinha({ dados, formato }: { dados: Ponto[]; formato?: (v:
           <XAxis dataKey="nome" {...eixo} />
           <YAxis {...eixo} tickFormatter={formato} width={56} />
           <Tooltip {...dica} formatter={(v) => (formato ? formato(Number(v)) : String(v))} />
-          <Line isAnimationActive={false} type="monotone" dataKey="valor" stroke={COR_SERIE} strokeWidth={2.5} dot={{ r: 3 }} />
+          <Line isAnimationActive={false} name={nome} type="monotone" dataKey="valor" stroke={COR_SERIE} strokeWidth={2.5} dot={{ r: 3 }} />
         </LineChart>
       </ResponsiveContainer>
     </div>
   )
 }
 
-export function GraficoBarra({ dados }: { dados: Ponto[] }) {
+export function GraficoBarra({ dados, nome = 'Quantidade' }: { dados: Ponto[]; nome?: string }) {
   return (
     <div className="grafico" role="img" aria-label="Gráfico de barras">
       <ResponsiveContainer width="100%" height={240} initialDimension={{ width: 500, height: 240 }}>
@@ -39,7 +44,7 @@ export function GraficoBarra({ dados }: { dados: Ponto[] }) {
           <XAxis dataKey="nome" {...eixo} />
           <YAxis {...eixo} allowDecimals={false} />
           <Tooltip {...dica} cursor={{ fill: 'var(--hover)' }} />
-          <Bar isAnimationActive={false} dataKey="valor" radius={[4, 4, 0, 0]} maxBarSize={36}>
+          <Bar isAnimationActive={false} name={nome} dataKey="valor" radius={[4, 4, 0, 0]} maxBarSize={36}>
             {dados.map((d, i) => (
               <Cell key={i} fill={d.cor ?? COR_SERIE} />
             ))}

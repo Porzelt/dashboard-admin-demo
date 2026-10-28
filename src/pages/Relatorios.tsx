@@ -6,7 +6,8 @@ import { StatusSolBadge } from '../components/badges'
 import { COR, GraficoBarra } from '../components/Chart'
 import { baixarCsv, gerarCsv, type ColunaCsv } from '../domain/csv'
 import { baixarExcel, dataExcel, type ColunaPlanilha } from '../domain/planilha'
-import { filtrarSolicitacoes } from '../domain/consultas'
+import { useOrdenacao } from '../components/useOrdenacao'
+import { filtrarSolicitacoes, ordenarSolicitacoes, type CampoSolicitacao } from '../domain/consultas'
 import { dataBr } from '../domain/formatar'
 import { ROTULO_PRIORIDADE, ROTULO_STATUS_SOLICITACAO, type Solicitacao, type StatusSolicitacao } from '../domain/types'
 import { useDados } from '../state'
@@ -45,16 +46,21 @@ export function Relatorios() {
   const [de, setDe] = useState('')
   const [ate, setAte] = useState('')
   const [gerando, setGerando] = useState(false)
+  const { ordem, direcao, alternar } = useOrdenacao<CampoSolicitacao>('criadaEm', 'desc')
   const nomeCliente = (id: string) => clientes.find((c) => c.id === id)?.nome ?? '—'
-  const lista = useMemo(() => filtrarSolicitacoes(solicitacoes, { status, de, ate }), [solicitacoes, status, de, ate])
+  // a exportação (Excel/CSV) sai na mesma ordem da tela
+  const lista = useMemo(() => {
+    const nome = (id: string) => clientes.find((c) => c.id === id)?.nome ?? ''
+    return ordenarSolicitacoes(filtrarSolicitacoes(solicitacoes, { status, de, ate }), ordem, direcao, nome)
+  }, [solicitacoes, clientes, status, de, ate, ordem, direcao])
   const porPrioridade = (['alta', 'media', 'baixa'] as const).map((p) => ({ nome: ROTULO_PRIORIDADE[p], valor: lista.filter((s) => s.prioridade === p).length, cor: COR_PRIORIDADE[p] }))
 
   const colunas: Coluna<Solicitacao>[] = [
-    { chave: 'id', titulo: 'Código', render: (s) => s.id },
-    { chave: 'titulo', titulo: 'Assunto', render: (s) => s.titulo },
-    { chave: 'cliente', titulo: 'Cliente', render: (s) => nomeCliente(s.clienteId) },
-    { chave: 'status', titulo: 'Status', render: (s) => <StatusSolBadge s={s.status} /> },
-    { chave: 'criadaEm', titulo: 'Aberta em', render: (s) => dataBr(s.criadaEm) },
+    { chave: 'id', titulo: 'Código', ordenavel: true, render: (s) => s.id },
+    { chave: 'titulo', titulo: 'Assunto', ordenavel: true, render: (s) => s.titulo },
+    { chave: 'cliente', titulo: 'Cliente', ordenavel: true, render: (s) => nomeCliente(s.clienteId) },
+    { chave: 'status', titulo: 'Status', ordenavel: true, render: (s) => <StatusSolBadge s={s.status} /> },
+    { chave: 'criadaEm', titulo: 'Aberta em', ordenavel: true, render: (s) => dataBr(s.criadaEm) },
   ]
 
   return (
@@ -104,11 +110,11 @@ export function Relatorios() {
       <div className="grid-2 alinhado-topo">
         <Kpi rotulo="Solicitações no filtro" valor={lista.length} />
         <Card titulo="Por prioridade">
-          <GraficoBarra dados={porPrioridade} />
+          <GraficoBarra dados={porPrioridade} nome="Solicitações" />
         </Card>
       </div>
       <Card titulo="Resultado">
-        <Table colunas={colunas} linhas={lista} chaveLinha={(s) => s.id} vazio="Nenhum registro para exportar neste período." />
+        <Table colunas={colunas} linhas={lista} chaveLinha={(s) => s.id} ordem={ordem} direcao={direcao} onOrdenar={alternar} vazio="Nenhum registro para exportar neste período." />
       </Card>
     </>
   )

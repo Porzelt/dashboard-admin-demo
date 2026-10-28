@@ -30,10 +30,10 @@ export function Dashboard() {
       </div>
       <div className="grid-2">
         <Card titulo="Receita por mês de cadastro">
-          <GraficoLinha dados={receita} formato={(v) => `${Math.round(v / 1000)}k`} />
+          <GraficoLinha dados={receita} nome="Receita" formato={(v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : String(v))} />
         </Card>
         <Card titulo="Novos clientes por mês">
-          <GraficoBarra dados={novos} />
+          <GraficoBarra dados={novos} nome="Novos clientes" />
         </Card>
         <Card titulo="Solicitações por status">
           <GraficoPizza dados={status} />
