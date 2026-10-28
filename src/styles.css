@@ -55,6 +55,8 @@ main { padding: 24px; max-width: 1280px; margin: 0 auto; display: flex; flex-dir
 .filterbar .busca { flex: 1 1 240px; width: auto; }
 .campo-inline { display: flex; flex-direction: column; gap: 2px; font-size: .78rem; color: var(--muted); }
 .campo-inline .input { min-width: 140px; }
+.filterbar:last-child { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
+.grid-2.alinhado-topo { align-items: start; }
 .tabela-wrap { overflow-x: auto; }
 .tabela { width: 100%; border-collapse: collapse; }
 .tabela th { text-align: left; font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--borda); white-space: nowrap; }

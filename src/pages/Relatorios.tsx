@@ -5,6 +5,7 @@ import { Table, type Coluna } from '../components/Table'
 import { StatusSolBadge } from '../components/badges'
 import { COR, GraficoBarra } from '../components/Chart'
 import { baixarCsv, gerarCsv, type ColunaCsv } from '../domain/csv'
+import { baixarExcel, dataExcel, type ColunaPlanilha } from '../domain/planilha'
 import { filtrarSolicitacoes } from '../domain/consultas'
 import { dataBr } from '../domain/formatar'
 import { ROTULO_PRIORIDADE, ROTULO_STATUS_SOLICITACAO, type Solicitacao, type StatusSolicitacao } from '../domain/types'
@@ -23,11 +24,27 @@ export function colunasCsv(nomeCliente: (id: string) => string): ColunaCsv<Solic
   ]
 }
 
+export function colunasPlanilha(nomeCliente: (id: string) => string): ColunaPlanilha<Solicitacao>[] {
+  return [
+    { titulo: 'Código', valor: (s) => s.id, largura: 10 },
+    { titulo: 'Assunto', valor: (s) => s.titulo, largura: 34 },
+    { titulo: 'Cliente', valor: (s) => nomeCliente(s.clienteId), largura: 24 },
+    { titulo: 'Status', valor: (s) => ROTULO_STATUS_SOLICITACAO[s.status], largura: 16 },
+    { titulo: 'Prioridade', valor: (s) => ROTULO_PRIORIDADE[s.prioridade] },
+    { titulo: 'Aberta em', valor: (s) => dataExcel(s.criadaEm) },
+    { titulo: 'Atualizada em', valor: (s) => dataExcel(s.atualizadaEm), largura: 15 },
+  ]
+}
+
+// data local (yyyy-mm-dd) para o nome do arquivo; toISOString usaria UTC e viraria o dia à noite
+const hoje = () => new Date().toLocaleDateString('sv-SE')
+
 export function Relatorios() {
   const { solicitacoes, clientes } = useDados()
   const [status, setStatus] = useState<StatusSolicitacao | ''>('')
   const [de, setDe] = useState('')
   const [ate, setAte] = useState('')
+  const [gerando, setGerando] = useState(false)
   const nomeCliente = (id: string) => clientes.find((c) => c.id === id)?.nome ?? '—'
   const lista = useMemo(() => filtrarSolicitacoes(solicitacoes, { status, de, ate }), [solicitacoes, status, de, ate])
   const porPrioridade = (['alta', 'media', 'baixa'] as const).map((p) => ({ nome: ROTULO_PRIORIDADE[p], valor: lista.filter((s) => s.prioridade === p).length, cor: COR_PRIORIDADE[p] }))
@@ -44,11 +61,26 @@ export function Relatorios() {
     <>
       <PageHeader
         titulo="Relatórios"
-        subtitulo="Filtre por período e status, exporte ou imprima"
+        subtitulo="Filtre por período e status, exporte para Excel ou CSV, ou imprima"
         acoes={
           <>
-            <button type="button" className="btn btn-primario" disabled={lista.length === 0} onClick={() => baixarCsv('solicitacoes.csv', gerarCsv(lista, colunasCsv(nomeCliente)))}>
-              Exportar CSV
+            <button
+              type="button"
+              className="btn btn-primario"
+              disabled={lista.length === 0 || gerando}
+              onClick={async () => {
+                setGerando(true)
+                try {
+                  await baixarExcel(`solicitacoes-${hoje()}.xlsx`, lista, colunasPlanilha(nomeCliente), 'Solicitações')
+                } finally {
+                  setGerando(false)
+                }
+              }}
+            >
+              {gerando ? 'Gerando…' : 'Exportar Excel'}
+            </button>
+            <button type="button" className="btn" disabled={lista.length === 0} onClick={() => baixarCsv(`solicitacoes-${hoje()}.csv`, gerarCsv(lista, colunasCsv(nomeCliente)))}>
+              CSV
             </button>
             <button type="button" className="btn" onClick={() => window.print()}>
               Imprimir / PDF
@@ -69,7 +101,7 @@ export function Relatorios() {
           <Selecao rotulo="Status" valor={status} onChange={(v) => setStatus(v as StatusSolicitacao | '')} opcoes={Object.entries(ROTULO_STATUS_SOLICITACAO).map(([valor, rotulo]) => ({ valor, rotulo }))} />
         </FilterBar>
       </Card>
-      <div className="grid-2">
+      <div className="grid-2 alinhado-topo">
         <Kpi rotulo="Solicitações no filtro" valor={lista.length} />
         <Card titulo="Por prioridade">
           <GraficoBarra dados={porPrioridade} />

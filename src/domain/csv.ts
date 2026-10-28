@@ -18,7 +18,11 @@ export function gerarCsv<T>(itens: T[], colunas: ColunaCsv<T>[]): string {
 }
 
 export function baixarCsv(nome: string, conteudo: string): void {
-  const url = URL.createObjectURL(new Blob([conteudo], { type: 'text/csv;charset=utf-8' }))
+  baixarArquivo(nome, new Blob([conteudo], { type: 'text/csv;charset=utf-8' }))
+}
+
+export function baixarArquivo(nome: string, blob: Blob): void {
+  const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
   a.download = nome
